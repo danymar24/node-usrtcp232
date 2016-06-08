@@ -10,8 +10,8 @@
 var socket = require('net');
 
 // The device ip and port, this can be changed in the device configuration
-var HOST = '192.168.1.40';
-var PORT = 1040;
+var HOST = process.argv[2];
+var PORT = process.argv[3];
 
 var tcp232 = new socket.Socket();
 

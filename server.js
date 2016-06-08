@@ -16,11 +16,11 @@ server.on('connection', function(socket){
 	socket.write('Hello client!');
 
 	socket.on('end', function(){
-
+		console.log('Client disconnected');
 	});
 });
 
-server.listen(8000, '192.168.1.151');
+server.listen(8000, 'localhost');
 
 server.on('listening', function(){
 	console.log('Server accepting connections.');
