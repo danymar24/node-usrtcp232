@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+</head>
+<body>
+	<button onclick="send()">SEND</button>
+
+
+	<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+	<script>
+		var socket = io('http://localhost');
+		
+		socket.on('news', function (data) {
+			console.log(data);
+			socket.emit('my other event', { my: 'data' });
+		});
+
+		var send = function() {
+			console.log('clicked');
+			socket.emit('my other event', {data: "some random data2"});
+		}
+	</script>
+</body>
+</html>

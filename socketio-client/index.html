@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="UsrTcp232">
+	<head>
+		<meta charset="UTF-8">
+		<title>USR-TCP232</title>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+	</head>
+	<body ng-controller="MainController">
+
+		<h1>USR-TCP232</h1>
+
+		<form>
+			<label for="host">Host:</label>
+			<input type="text" name="host" ng-model="info.host">
+			<label for="port">Port:</label>
+			<input type="number" name="port" ng-model="info.port">
+			<button ng-click="connect(info)" ng-show="!connected">Connect</button>
+			<button ng-click="disconnect()" ng-show="connected">Disconnect</button>
+		</form>
+
+		<form ng-submit="send(data)">
+			<label for="received">Received data:</label>
+			<textarea name="received" id="" cols="30" rows="10" ng-model="receivedData" ng-disabled="!connected"></textarea>
+			<label for="data">Data to send:</label>
+			<textarea name="data" id="data" cols="30" rows="10" ng-model="data" ng-disabled="!connected"></textarea>
+			<button type="submit">Send</button>
+		</form>
+
+
+		<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+		<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+		<script>
+			/**
+			* UsrTcp232 Module
+			*
+			* Description
+			*/
+			var UsrTcp232 = angular.module('UsrTcp232', []);
+
+			UsrTcp232.factory('socket', function ($rootScope) {
+				var socket = io.connect();
+				return {
+					on: function (eventName, callback) {
+						socket.on(eventName, function () {  
+							var args = arguments;
+							$rootScope.$apply(function () {
+								callback.apply(socket, args);
+							});
+						});
+					},
+					emit: function (eventName, data, callback) {
+						socket.emit(eventName, data, function () {
+							var args = arguments;
+							$rootScope.$apply(function () {
+								if (callback) {
+									callback.apply(socket, args);
+								}
+							});
+						})
+					}
+				};
+			});
+
+			UsrTcp232.controller('MainController', ['$scope', 'socket', function($scope, socket){
+
+				$scope.connected = false;
+
+				// I have set the default connection info
+				$scope.info = {};
+				$scope.info.host = '192.168.1.40';
+				$scope.info.port = 1040;
+				
+				socket.on('connection', function(data){
+					console.log('Conected to the server');
+				});
+
+				socket.on('usrConnected', function(connected){
+					$scope.connected = connected.connected;
+				});
+
+				socket.on('data', function (data) {
+					$scope.receivedData = data.data;
+				});
+
+				$scope.connect = function(info){
+					socket.emit('connectInfo', info);
+				};
+
+				$scope.disconnect = function(){
+					socket.emit('disconnectInfo', {disconnect: true});
+				};
+
+				$scope.send = function(data) {
+					socket.emit('data', data);
+				};
+
+			}]);
+
+
+		</script>
+
+	</body>
+</html>
